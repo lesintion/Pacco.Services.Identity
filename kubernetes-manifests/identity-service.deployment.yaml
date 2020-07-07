@@ -1,0 +1,40 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-service
+  labels:
+    app: identity-service
+    service: identity-service
+    version: v1
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-service
+      service: identity-service
+      version: v1
+
+  template:
+    metadata:
+      labels:
+        app: identity-service
+        service: identity-service
+        version: v1
+
+    spec:
+      containers:
+      - image: pacco-identity-service:latest
+        name: identity-service
+        ports:
+        - name: http-server
+          containerPort: 80
+        - name: debug
+          containerPort: 9229
+        env:
+          - name: ASPNETCORE_URLS
+            value: http://*:80
+          - name: ASPNETCORE_ENVIRONMENT
+            value: k8s
+        resources: {}
+      restartPolicy: Always

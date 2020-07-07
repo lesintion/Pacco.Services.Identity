@@ -81,6 +81,7 @@ namespace Pacco.Services.Identity.Api
             if (user is null)
             {
                 context.Response.StatusCode = 404;
+
                 return;
             }
 

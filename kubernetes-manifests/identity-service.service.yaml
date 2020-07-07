@@ -1,0 +1,18 @@
+﻿apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+  labels:
+    app: identity-service
+    service: identity-service
+    version: v1
+spec:
+  type: ClusterIP
+  selector:
+    app: identity-service
+    service: identity-service
+    version: v1
+  ports:
+  - port: 80
+    name: http
+    targetPort: http-server

@@ -1,0 +1,30 @@
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS base
+WORKDIR /src
+EXPOSE 80
+
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine AS build
+WORKDIR /src
+COPY ./src .
+
+RUN dotnet restore Pacco.Services.Identity.Api/Pacco.Services.Identity.Api.csproj --ignore-failed-sources \
+    && dotnet build './Pacco.Services.Identity.Api/Pacco.Services.Identity.Api.csproj' -c Debug -o /out --no-restore
+FROM build AS publish
+RUN dotnet publish Pacco.Services.Identity.Api/Pacco.Services.Identity.Api.csproj -c Debug -o /out
+
+# Building final image used in running container
+FROM base AS final
+WORKDIR /src
+COPY --from=publish /out .
+
+ENV ASPNETCORE_URLS http://*:80
+ENV ASPNETCORE_ENVIRONMENT k8s
+
+# Installing vsdbg on the container to enable debugging of .NET Core
+RUN apk update \
+    && apk add unzip \
+    && apk add procps \
+    && apk add curl bash \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l /vsdbg
+
+ENTRYPOINT ["dotnet", "Pacco.Services.Identity.Api.dll"]
